@@ -20,6 +20,13 @@ However, this programm is developed with best intentions in mind and I hope it's
 
 ## Usage
 
+Todo 13.10.2020: 
+
 
 ## Acquire Evernote Access Token
 
+Todo 13.10.2020:
+show how to extract access token from evernote web client.
+token expires within 30 minutes - hugh draw back.
+
+OAuth 1.0 isn't option. Dosen't support shipped clients, because of client id and secret.
