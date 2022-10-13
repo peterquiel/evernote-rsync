@@ -1,0 +1,25 @@
+# Evernote Rsync
+
+A simple java based programm to sync Evernote Attachments
+with your local file system.
+
+
+## Disclaimer
+
+I use this application for my personal purpose on a Unbuntu linux system
+and I did not test it on other system.
+
+Use with care and at your own risk.
+This programm doesn't write (yet) to Evernote, but may
+delete files on your local system if you use the `--delete` option.
+
+I suggest to backup your local working directory, use `--dryRun` option
+before every real run and use `--delete` option with care.
+
+However, this programm is developed with best intentions in mind and I hope it's useful.
+
+## Usage
+
+
+## Acquire Evernote Access Token
+
