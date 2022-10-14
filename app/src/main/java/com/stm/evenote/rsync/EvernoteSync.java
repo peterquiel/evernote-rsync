@@ -2,18 +2,9 @@ package com.stm.evenote.rsync;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
-import java.time.ZoneOffset;
-import java.util.Arrays;
-import java.util.Base64;
 import java.util.Collections;
-import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Callable;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import com.evernote.auth.EvernoteAuth;
 import com.evernote.auth.EvernoteService;
@@ -36,9 +27,6 @@ import picocli.CommandLine;
   version = "Evernote Sync Version: 0.3")
 public class EvernoteSync implements Callable<Integer> {
   private static final Logger logger = LoggerFactory.getLogger(EvernoteSync.class);
-  private static final Pattern tokenExpiresPattern = Pattern.compile("\\\"exp\\\":\\s*(?<exp>\\d*)");
-  private static Pattern monoAuthnTokenPattern =
-    Pattern.compile("\\\"mono_authn_token\\\":\\s*\\\"(?<authnToken>[^\\\"]+)\\\"");
 
   @CommandLine.Option(names = {"-d", "--directory"},
     description = "Local directory to sync to and from. Default is current working directory")
@@ -52,11 +40,12 @@ public class EvernoteSync implements Callable<Integer> {
     description = "A list of Evernote notebook names its attachments should be synced.")
   List<String> notebooks = Collections.emptyList();
 
-  @CommandLine.Option(names = {"-jt", "--jwt-token"},
-    description = "Evernote jwt token; read readme in order to know how to extract the token from web client login" +
+  @CommandLine.Option(names = {"-t", "--token"},
+    description = "Evernote access token; read readme in order to know how to extract the token from web client login" +
       " " +
-      "process", required = true)
-  String jwtToken;
+      "process",
+    interactive = true, required = true)
+  String token;
 
   @CommandLine.Option(names = {"-es", "--evernote-service"},
     description = "Evernote service to use. default is PRODUCTION; possible values: ${COMPLETION-CANDIDATES}")
@@ -86,28 +75,17 @@ public class EvernoteSync implements Callable<Integer> {
   }
 
   @Override
-  public Integer call() throws Exception {
-    final Optional<String> autTokenOptional = extractAccessTokenFrom(this.jwtToken);
-    if (autTokenOptional.isEmpty()) {
-      System.exit(1);
-    }
-
-    final String authnToken = autTokenOptional.get();
-    logger.info(
-      "Authn Token successfully extracted. Connecting to {} with token: {}...",
-      evernoteService.getHost(),
-      authnToken.substring(0, 20)
-    );
-
+  public Integer call() {
+    logger.info("Connecting to {} using given token", evernoteService.getHost());
     if (this.notebooks.isEmpty() && this.stacks.isEmpty()) {
       System.out.println("Missing Evernote stacks and/or notebooks.");
       new CommandLine(this).usage(System.out);
       return 1;
     }
 
-    final ClientFactory clientFactory = new ClientFactory(new EvernoteAuth(evernoteService, authnToken));
+    final ClientFactory clientFactory = new ClientFactory(new EvernoteAuth(evernoteService, token));
 
-    final NoteStoreClient noteClient = clientFactory.createNoteStoreClient();
+    NoteStoreClient noteClient = createNoteStoreClient(clientFactory);
 
     var evernoteSyncFileFactory = new EvernoteSyncFileFactory(noteClient).loadAllNotebooks();
 
@@ -129,54 +107,21 @@ public class EvernoteSync implements Callable<Integer> {
     return 0;
   }
 
+  private NoteStoreClient createNoteStoreClient(ClientFactory clientFactory) {
+    try {
+      return clientFactory.createNoteStoreClient();
+    } catch(Exception e) {
+      logger.error("Could not connect to evernote with probably invalid token: '{}'.", token, e);
+      System.exit(1);
+      return null;
+    }
+  }
+
   private OperationFactory createOperationFactory() {
     if (this.dryRun) {
       return new DryRunOperationFactory(this.localDirectory);
     } else {
       return new FileSystemOperationFactory(this.localDirectory, this.delete);
     }
-  }
-
-  Optional<String> extractAccessTokenFrom(String jwtToken) {
-    try {
-      return Arrays.stream(jwtToken.split("\\."))
-        .map(String::trim)
-        .map(s -> s.replaceAll("\\s", ""))
-        .map(Base64.getDecoder()::decode)
-        .map(String::new)
-        .map(this::extractMonoAuthnToken)
-        .filter(Optional::isPresent)
-        .flatMap(Optional::stream)
-        .findFirst();
-    } catch (Exception e) {
-      logger.error(
-        "Could not extract auth token from jwt token. Use `https://jwt.io/` and verify that you find an " +
-          "mono_authn_token in the token.",
-        e
-      );
-      return Optional.empty();
-    }
-  }
-
-  Optional<String> extractMonoAuthnToken(String candidate) {
-    final Matcher matcher = monoAuthnTokenPattern.matcher(candidate);
-    if (matcher.find()) {
-      final Matcher expMatcher = tokenExpiresPattern.matcher(candidate);
-      if (expMatcher.find()) {
-        final String expires = expMatcher.group("exp");
-
-        final Date expireDate = new Date(Long.parseLong(expires) * 1000);
-        if (expireDate.before(new Date())) {
-          logger.warn(
-            "Authn Token expired already at {}. Please re-extract jwt token from evernote web client!",
-            expireDate
-          );
-        } else {
-          logger.info("Authn Token expires: {}", expireDate);
-        }
-      }
-      return Optional.of(matcher.group("authnToken"));
-    }
-    return Optional.empty();
   }
 }
