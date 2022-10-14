@@ -6,6 +6,7 @@ import java.io.IOException;
 import com.stm.evenote.rsync.model.Operation;
 import com.stm.evenote.rsync.model.OperationFactory;
 import com.stm.evenote.rsync.model.SyncFile;
+import com.stm.evenote.rsync.model.SyncPath;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,29 +34,36 @@ public class FileSystemOperationFactory implements OperationFactory {
   public Operation updateFile(SyncFile fileToUpdate, SyncFile fileWithNewContent) {
 
     return () -> {
-      logger.info("Updating file {} with data from {}", fileToUpdate, fileWithNewContent);
+      var absoluteSyncPath = fileToUpdate.getFilename().prepend(this.workingDirectory);
+      logger.info("Updating file '{}' with new data", absoluteSyncPath);
       try {
-        final File file = fileToUpdate.toFile(this.workingDirectory);
+        final File file = absoluteSyncPath.toFile();
         FileUtils.writeByteArrayToFile(file, fileWithNewContent.getDataSupplier().get());
         file.setLastModified(fileWithNewContent.getTimestamp());
       } catch (IOException e) {
-        logger.error("Could update file {} with data from {}", fileToUpdate, fileWithNewContent, e);
+        logger.error("Could not update file '{}' with new data", absoluteSyncPath, e);
       }
     };
   }
 
   @Override
-  public Operation deleteFile(SyncFile fileToDelete) {
+  public Operation delete(SyncFile syncPathToDelete) {
 
     return () -> {
-      final File file = fileToDelete.toFile(this.workingDirectory);
-      if (file.exists()) {
-        if (this.delete) {
-          logger.info("Deleting file {}", fileToDelete);
-          FileUtils.deleteQuietly(file);
-        } else {
-          logger.info("File {} not found in Evernote. Use 'delete' option to delete on local drive.", fileToDelete);
+      var absoluteFile = syncPathToDelete.getFilename().prepend(this.workingDirectory);
+      if (this.delete) {
+        if (absoluteFile.isFile()) {
+          logger.info("Deleting file '{}'", absoluteFile);
+          FileUtils.deleteQuietly(absoluteFile.toFile());
+        } else if (absoluteFile.isEmptyDir()) {
+          logger.info("Deleting empty directory '{}'", absoluteFile);
+          FileUtils.deleteQuietly(absoluteFile.toFile());
         }
+      } else {
+        logger.info(
+          "Deletion inactive. Use 'delete' option to delete file '{}'.",
+          syncPathToDelete
+        );
       }
     };
   }
@@ -64,13 +72,14 @@ public class FileSystemOperationFactory implements OperationFactory {
   public Operation newFile(SyncFile newFile) {
 
     return () -> {
-      logger.info("Creating new file {}", newFile);
+      var absoluteSyncPath = newFile.getFilename().prepend(this.workingDirectory);
+      logger.info("Creating new file '{}'", absoluteSyncPath);
       try {
-        final File file = newFile.toFile(this.workingDirectory);
+        final File file = absoluteSyncPath.toFile();
         FileUtils.writeByteArrayToFile(file, newFile.getDataSupplier().get());
         file.setLastModified(newFile.getTimestamp());
       } catch (IOException e) {
-        logger.error("Could create new file {}", newFile, e);
+        logger.error("Could not create new file {}", newFile, e);
       }
     };
   }

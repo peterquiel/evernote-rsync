@@ -32,10 +32,12 @@ public class EvernoteSync implements Callable<Integer> {
     description = "Local directory to sync to and from. Default is current working directory")
   String localDirectory = Paths.get(".").toAbsolutePath().normalize().toString();
 
-  @CommandLine.Option(names = {"-s", "--stacks"}, description = "A list of Evernote stack names its attachments should be synced.")
+  @CommandLine.Option(names = {"-s", "--stacks"},
+    description = "A list of Evernote stack names its attachments should be synced.")
   List<String> stacks = Collections.emptyList();
 
-  @CommandLine.Option(names = {"-n", "--notebooks"}, description = "A list of Evernote notebook names its attachments should be synced.")
+  @CommandLine.Option(names = {"-n", "--notebooks"},
+    description = "A list of Evernote notebook names its attachments should be synced.")
   List<String> notebooks = Collections.emptyList();
 
   @CommandLine.Option(names = {"-t", "--token"},
@@ -50,22 +52,22 @@ public class EvernoteSync implements Callable<Integer> {
   EvernoteService evernoteService = EvernoteService.PRODUCTION;
 
   @CommandLine.Option(names = {"--delete"},
-    description = "Delete local files not found in Evernote. Default false.")
-  boolean delete;
+    description = "Delete empty local directories or local files not found in Evernote. Default false.")
+  boolean delete = false;
 
   @CommandLine.Option(names = {"-dr", "--dryRun"},
     description = "Dry Run: Log file operations instead of applying them.")
-  boolean dryRun;
+  boolean dryRun = false;
 
   @CommandLine.Option(names = {"-v", "--version"}, versionHelp = true,
     description = "print version information and exit")
-  boolean versionRequested;
+  boolean versionRequested = false;
 
   @CommandLine.Option(names = {"--verbose"}, description = "detailed log output")
-  boolean verbose;
+  boolean verbose = false;
 
   @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
-  boolean usageHelpRequested;
+  boolean usageHelpRequested = false;
 
   public static void main(String[] args) {
     int exitCode = new CommandLine(new EvernoteSync()).execute(args);
@@ -88,16 +90,17 @@ public class EvernoteSync implements Callable<Integer> {
     var evernoteSyncFileFactory = new EvernoteSyncFileFactory(noteClient).loadAllNotebooks();
 
     final SyncFiles evernoteSyncFiles = evernoteSyncFileFactory.createForStacks(this.stacks)
-        .merge(evernoteSyncFileFactory.createForNotebooks(this.notebooks));
+      .merge(evernoteSyncFileFactory.createForNotebooks(this.notebooks));
 
     final SyncFiles localFiles = new LocalSyncFileFactory().createFor(new File(this.localDirectory));
 
     logger.info("evernote: \n{}", evernoteSyncFiles);
     logger.info("local: \n{}", localFiles);
 
+    var operationFactory = createOperationFactory();
     localFiles.migrateTo(
         evernoteSyncFiles,
-        createOperationFactory()
+        operationFactory
       )
       .forEach(Operation::execute);
 

@@ -2,6 +2,7 @@ package com.stm.evenote.rsync.opfactory
 
 import com.stm.evenote.rsync.model.SyncFile
 import com.stm.evenote.rsync.model.SyncPath
+import spock.lang.Ignore
 import spock.lang.Specification
 import spock.lang.TempDir
 import spock.util.io.FileSystemFixture
@@ -54,13 +55,13 @@ class FileSystemOperationFactoryTest extends Specification {
     file.exists()
 
     when:
-    deleteDisabledOpFactory.deleteFile(syncFile).execute()
+    deleteDisabledOpFactory.delete(syncFile).execute()
 
     then:
     file.exists()
 
     when:
-    deleteOpFactory.deleteFile(syncFile).execute()
+    deleteOpFactory.delete(syncFile).execute()
 
     then:
     !file.exists()
@@ -80,10 +81,39 @@ class FileSystemOperationFactoryTest extends Specification {
     !file.exists()
 
     when:
-    deleteOpFactory.deleteFile(syncFile).execute()
+    deleteOpFactory.delete(syncFile).execute()
 
     then:
     !file.exists()
+  }
+
+  void "test delete empty directory" () {
+    given:
+    def nonEmptyDir = fsFixture.file("not empty").toFile()
+    def emptyDir = fsFixture.file("empty").toFile()
+
+    and:
+    FileSystemOperationFactory deleteOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true)
+
+    when:
+    fsFixture.file("not empty/file.txt").toFile().text = "content"
+    emptyDir.mkdir()
+
+    then:
+    emptyDir.exists()
+    emptyDir.isDirectory()
+    nonEmptyDir.exists()
+    nonEmptyDir.isDirectory()
+
+    when:
+    deleteOpFactory.delete(new SyncFile().withPath(nonEmptyDir.name)).execute()
+    deleteOpFactory.delete(new SyncFile().withPath(emptyDir.name)).execute()
+
+    then:
+    !emptyDir.exists()
+    !emptyDir.isDirectory()
+    nonEmptyDir.exists()
+    nonEmptyDir.isDirectory()
   }
 
 }

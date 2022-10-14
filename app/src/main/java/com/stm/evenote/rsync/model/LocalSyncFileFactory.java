@@ -10,6 +10,7 @@ import java.security.NoSuchAlgorithmException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.file.PathUtils;
 import org.apache.commons.io.filefilter.FileFileFilter;
+import org.apache.commons.io.filefilter.TrueFileFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,10 +33,9 @@ public class LocalSyncFileFactory {
 
       try {
         PathUtils.walk(directory.toPath(),
-            FileFileFilter.INSTANCE, Integer.MAX_VALUE,
+            TrueFileFilter.TRUE, Integer.MAX_VALUE,
             false, FileVisitOption.FOLLOW_LINKS)
           .map(Path::toFile)
-          .filter(File::isFile)
           .map(f -> this.fromFile(directory, f))
           .forEach(syncFiles::add);
       } catch (IOException e) {
@@ -47,11 +47,9 @@ public class LocalSyncFileFactory {
 
   public SyncFile fromFile(File workingDirectory, File file) {
 
-    final SyncPath fileName =
-      SyncPath.EMPTY.append(file.getParentFile()
-          .getPath()
-          .substring(workingDirectory.getPath().length() + 1))
-        .append(file.getName());
+    var workingDirPath = workingDirectory.getPath();
+    var relativeFilePath = file.getPath().substring(workingDirPath.length());
+    final SyncPath fileName = SyncPath.EMPTY.append(relativeFilePath);
 
     return new SyncFile()
       .withSyncPath(fileName)
@@ -63,7 +61,11 @@ public class LocalSyncFileFactory {
   private byte[] readFile(File file) {
 
     try {
-      return FileUtils.readFileToByteArray(file);
+      if (file.isFile()) {
+        return FileUtils.readFileToByteArray(file);
+      } else {
+        return new byte[0];
+      }
     } catch (IOException e) {
       throw new RuntimeException(e);
     }

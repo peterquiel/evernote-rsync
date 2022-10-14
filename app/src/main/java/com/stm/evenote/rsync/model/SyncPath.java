@@ -1,5 +1,6 @@
 package com.stm.evenote.rsync.model;
 
+import java.io.File;
 import java.util.Objects;
 
 public class SyncPath {
@@ -49,6 +50,20 @@ public class SyncPath {
     int result = segmentName != null ? segmentName.hashCode() : 0;
     result = 31 * result + (parentPath != null ? parentPath.hashCode() : 0);
     return result;
+  }
+
+  public File toFile() {
+    return new File(this.toString());
+  }
+
+  public boolean isFile() {
+    var file = toFile();
+    return file.exists() && file.isFile();
+  }
+
+  public boolean isEmptyDir() {
+    var file = toFile();
+    return file.exists() && file.isDirectory() && (file.list() == null || file.list().length == 0 );
   }
 
   @Override

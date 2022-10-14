@@ -45,7 +45,7 @@ public class SyncFiles {
 
     final List<Operation> deleteOperations = this.syncFiles.stream()
       .filter(f -> newState.findByPath(f).isEmpty())
-      .map(operationFactory::deleteFile)
+      .map(operationFactory::delete)
       .toList();
 
       final ArrayList<Operation> operations = new ArrayList<>(createOperation);

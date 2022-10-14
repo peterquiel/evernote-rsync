@@ -6,7 +6,7 @@ public interface OperationFactory {
 
     Operation updateFile(SyncFile fileToUpdate, SyncFile fileWithNewContent);
 
-    Operation deleteFile(SyncFile fileToDelete);
+    Operation delete(SyncFile fileToDelete);
 
     Operation newFile(SyncFile targetFile);
 }

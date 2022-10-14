@@ -1,6 +1,5 @@
 package com.stm.evenote.rsync.model;
 
-import java.io.File;
 import java.util.Objects;
 import java.util.function.Supplier;
 
@@ -83,11 +82,6 @@ public class SyncFile {
   public SyncFile withTimestamp(long timestamp) {
     this.timestamp = timestamp;
     return this;
-  }
-
-  public File toFile(String workingDirectory) {
-
-    return new File(this.filename.prepend(workingDirectory).toString());
   }
 
   @Override

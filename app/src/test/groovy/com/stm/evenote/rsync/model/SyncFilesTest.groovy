@@ -52,7 +52,7 @@ class SyncFilesTest extends Specification {
       new SyncFile().withPath("to delete")
         .withHash("to delete")
 
-    def updateFrom =       new SyncFile().withPath("update")
+    def updateFrom = new SyncFile().withPath("update")
       .withHash("update_old_hash")
 
     def currentState = new SyncFiles([
@@ -69,7 +69,7 @@ class SyncFilesTest extends Specification {
     1 * operationFactory.newFile(newFile)
     1 * operationFactory.newFile(moveTo)
     1 * operationFactory.updateFile(updateFrom, updateTo)
-    1 * operationFactory.deleteFile(toDelete)
-    1 * operationFactory.deleteFile(moveFrom)
+    1 * operationFactory.delete(toDelete)
+    1 * operationFactory.delete(moveFrom)
   }
 }

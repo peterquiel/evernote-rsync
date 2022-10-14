@@ -5,6 +5,7 @@ import java.io.File;
 import com.stm.evenote.rsync.model.Operation;
 import com.stm.evenote.rsync.model.OperationFactory;
 import com.stm.evenote.rsync.model.SyncFile;
+import com.stm.evenote.rsync.model.SyncPath;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,15 +32,14 @@ public class DryRunOperationFactory implements OperationFactory {
   }
 
   @Override
-  public Operation deleteFile(SyncFile fileToDelete) {
+  public Operation delete(SyncFile pathToDelete) {
 
     return () -> {
-      final File file = fileToDelete.toFile(this.workingDirectory);
-      if (file.exists()) {
-        logger.info("Dry Run: file {} exists and would be deleted", fileToDelete);
-      } else {
-        logger.info("Dry Run: file {} does not exist and should be deleted. Nothing to do.", fileToDelete);
-
+      final var file = pathToDelete.getFilename().prepend(this.workingDirectory);
+      if (file.isFile()) {
+        logger.info("Dry Run: {} exists and would be deleted", pathToDelete);
+      } else if(file.isEmptyDir()) {
+        logger.info("Dry Run: {} is empty directory and would be deleted", pathToDelete);
       }
     };
   }
