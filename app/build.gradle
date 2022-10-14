@@ -39,10 +39,12 @@ dependencies {
 
 
 task fatjar(type: Jar) {
+  group 'Build'
+  description "Build a jar with all dependencies"
   manifest {
     attributes "Main-Class": 'com.stm.evenote.rsync.EvernoteSync'
   }
-  baseName = 'evernote-rsync'
+  archivesBaseName = 'evernote-rsync'
   duplicatesStrategy = DuplicatesStrategy.EXCLUDE
   from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
   with jar
