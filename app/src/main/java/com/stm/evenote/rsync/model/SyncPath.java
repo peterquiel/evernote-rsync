@@ -66,6 +66,10 @@ public class SyncPath {
     return file.exists() && file.isDirectory() && (file.list() == null || file.list().length == 0 );
   }
 
+  public boolean matches(String pattern) {
+    return this.toString().matches(pattern);
+  }
+
   @Override
   public boolean equals(Object o) {
     if (o == null || getClass() != o.getClass()) {

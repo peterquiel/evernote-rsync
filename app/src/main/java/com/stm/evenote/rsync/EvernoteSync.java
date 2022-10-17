@@ -5,6 +5,7 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 
 import com.evernote.auth.EvernoteAuth;
 import com.evernote.auth.EvernoteService;
@@ -55,6 +56,10 @@ public class EvernoteSync implements Callable<Integer> {
     description = "Delete empty local directories or local files not found in Evernote. Default false.")
   boolean delete = false;
 
+  @CommandLine.Option(names = {"-de", "--delete-excludes"},
+    description = "Regular expression to exclude files or folders for deletion.")
+  List<String> excludeDelete = Collections.emptyList();
+
   @CommandLine.Option(names = {"-dr", "--dryRun"},
     description = "Dry Run: Log file operations instead of applying them.")
   boolean dryRun = false;
@@ -83,6 +88,12 @@ public class EvernoteSync implements Callable<Integer> {
       return 1;
     }
 
+    if (this.delete && !this.excludeDelete.isEmpty()) {
+      logger.info("Delete is active, following exclude patterns defined: '{}'",
+        String.join("','", this.excludeDelete)
+      );
+    }
+
     final ClientFactory clientFactory = new ClientFactory(new EvernoteAuth(evernoteService, token));
 
     final NoteStoreClient noteClient = clientFactory.createNoteStoreClient();
@@ -94,8 +105,10 @@ public class EvernoteSync implements Callable<Integer> {
 
     final SyncFiles localFiles = new LocalSyncFileFactory().createFor(new File(this.localDirectory));
 
-    logger.info("evernote: \n{}", evernoteSyncFiles);
-    logger.info("local: \n{}", localFiles);
+    if (verbose) {
+      logger.info("Evernote Attachments: \n{}", evernoteSyncFiles);
+      logger.info("Local Files System: \n{}", localFiles);
+    }
 
     var operationFactory = createOperationFactory();
     localFiles.migrateTo(
@@ -109,9 +122,9 @@ public class EvernoteSync implements Callable<Integer> {
 
   private OperationFactory createOperationFactory() {
     if (this.dryRun) {
-      return new DryRunOperationFactory(this.localDirectory);
+      return new DryRunOperationFactory(this.localDirectory, this.delete, this.excludeDelete);
     } else {
-      return new FileSystemOperationFactory(this.localDirectory, this.delete);
+      return new FileSystemOperationFactory(this.localDirectory, this.delete, this.excludeDelete);
     }
   }
 }

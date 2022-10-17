@@ -2,7 +2,6 @@ package com.stm.evenote.rsync.opfactory
 
 import com.stm.evenote.rsync.model.SyncFile
 import com.stm.evenote.rsync.model.SyncPath
-import spock.lang.Ignore
 import spock.lang.Specification
 import spock.lang.TempDir
 import spock.util.io.FileSystemFixture
@@ -19,7 +18,7 @@ class FileSystemOperationFactoryTest extends Specification {
       .withSyncPath(SyncPath.EMPTY.append("dir").append("file.txt"))
 
     and:
-    FileSystemOperationFactory operationFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), false)
+    FileSystemOperationFactory operationFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), false, null)
 
     when:
     operationFactory.newFile(syncFile).execute()
@@ -45,8 +44,8 @@ class FileSystemOperationFactoryTest extends Specification {
     def syncFile = new SyncFile()
       .withSyncPath(SyncPath.EMPTY.append("dir").append("file.txt"))
 
-    FileSystemOperationFactory deleteOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true)
-    FileSystemOperationFactory deleteDisabledOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), false)
+    FileSystemOperationFactory deleteOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true, null)
+    FileSystemOperationFactory deleteDisabledOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), false, null)
 
     when:
     file.text = "content"
@@ -72,7 +71,7 @@ class FileSystemOperationFactoryTest extends Specification {
     def syncFile = new SyncFile()
       .withSyncPath(SyncPath.EMPTY.append("dir").append("file.txt"))
 
-    FileSystemOperationFactory deleteOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true)
+    FileSystemOperationFactory deleteOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true, null)
 
     when:
     def file = fsFixture.file("dir/file.txt").toFile()
@@ -87,13 +86,13 @@ class FileSystemOperationFactoryTest extends Specification {
     !file.exists()
   }
 
-  void "test delete empty directory" () {
+  void "test delete empty directory"() {
     given:
     def nonEmptyDir = fsFixture.file("not empty").toFile()
     def emptyDir = fsFixture.file("empty").toFile()
 
     and:
-    FileSystemOperationFactory deleteOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true)
+    FileSystemOperationFactory deleteOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true, null)
 
     when:
     fsFixture.file("not empty/file.txt").toFile().text = "content"
@@ -114,6 +113,33 @@ class FileSystemOperationFactoryTest extends Specification {
     !emptyDir.isDirectory()
     nonEmptyDir.exists()
     nonEmptyDir.isDirectory()
+  }
+
+  void "test exclude deletion as normal string"() {
+    given:
+    def syncFile = new SyncFile().withPath("dir")
+
+    when:
+    def dir = fsFixture.dir("dir").toFile()
+
+    then:
+    dir.exists()
+    dir.isDirectory()
+
+    when:
+    new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true, ["dir"])
+      .delete(syncFile).execute()
+
+    then:
+    dir.exists()
+    dir.isDirectory()
+
+    when:
+    new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true, null)
+      .delete(syncFile).execute()
+
+    then:
+    !dir.exists()
   }
 
 }

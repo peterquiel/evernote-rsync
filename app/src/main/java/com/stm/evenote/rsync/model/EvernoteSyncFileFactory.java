@@ -35,6 +35,7 @@ public class EvernoteSyncFileFactory {
   public EvernoteSyncFileFactory loadAllNotebooks() {
 
     try {
+      LOGGER.info("Loading evernote notebook list");
       notebooks = this.noteStoreClient.listNotebooks();
       LOGGER.info("Loaded {} evernote notebooks.", notebooks.size());
       return this;

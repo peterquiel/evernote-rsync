@@ -25,7 +25,7 @@ public class SyncFile {
     return Objects.equals(this.md5Hash, other.md5Hash);
   }
 
-  public boolean matchesPath(SyncFile other) {
+  public boolean equalsPath(SyncFile other) {
 
     return Objects.equals(this.filename, other.filename);
   }
@@ -49,6 +49,10 @@ public class SyncFile {
 
     this.filename = SyncPath.EMPTY.append(path);
     return this;
+  }
+
+  public boolean matches(String pattern) {
+    return filename.matches(pattern);
   }
 
   public Supplier<byte[]> getDataSupplier() {

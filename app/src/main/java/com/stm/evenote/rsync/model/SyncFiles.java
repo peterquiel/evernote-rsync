@@ -68,7 +68,7 @@ public class SyncFiles {
 
   private Optional<SyncFile> findByPath(SyncFile other) {
     return this.syncFiles.stream()
-      .filter(f -> f.matchesPath(other))
+      .filter(f -> f.equalsPath(other))
       .findFirst();
   }
 
