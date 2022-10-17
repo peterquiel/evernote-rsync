@@ -5,7 +5,6 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.stream.Collectors;
 
 import com.evernote.auth.EvernoteAuth;
 import com.evernote.auth.EvernoteService;
@@ -30,7 +29,8 @@ public class EvernoteSync implements Callable<Integer> {
   private static final Logger logger = LoggerFactory.getLogger(EvernoteSync.class);
 
   @CommandLine.Option(names = {"-d", "--directory"},
-    description = "Local directory to sync to and from. Default is current working directory")
+    description = "Local directory to sync to. Evernote attachments are written in this directory. Default is current" +
+      " working directory")
   String localDirectory = Paths.get(".").toAbsolutePath().normalize().toString();
 
   @CommandLine.Option(names = {"-s", "--stacks"},
@@ -47,7 +47,7 @@ public class EvernoteSync implements Callable<Integer> {
   String token;
 
   @CommandLine.Option(names = {"-es", "--evernote-service"},
-    description = "Evernote service to use. default is PRODUCTION; possible values: ${COMPLETION-CANDIDATES}")
+    description = "Evernote service to use. Default is PRODUCTION; possible values: ${COMPLETION-CANDIDATES}")
   EvernoteService evernoteService = EvernoteService.PRODUCTION;
 
   @CommandLine.Option(names = {"--delete"},
@@ -89,7 +89,8 @@ public class EvernoteSync implements Callable<Integer> {
     }
 
     if (this.delete && !this.excludeDelete.isEmpty()) {
-      logger.info("Delete is active, following exclude patterns defined: '{}'",
+      logger.info(
+        "Delete is active, following exclude patterns defined: '{}'",
         String.join("','", this.excludeDelete)
       );
     }
@@ -123,7 +124,7 @@ public class EvernoteSync implements Callable<Integer> {
   private NoteStoreClient createNoteStoreClient(ClientFactory clientFactory) {
     try {
       return clientFactory.createNoteStoreClient();
-    } catch(Exception e) {
+    } catch (Exception e) {
       logger.error("Could not connect to evernote with probably invalid token: '{}'.", token, e);
       System.exit(1);
       return null;
