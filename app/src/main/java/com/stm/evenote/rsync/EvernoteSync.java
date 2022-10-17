@@ -80,8 +80,8 @@ public class EvernoteSync implements Callable<Integer> {
   }
 
   @Override
-  public Integer call() throws Exception {
-    logger.info("Connecting to {} with token: {}", evernoteService.getHost(), token);
+  public Integer call() {
+    logger.info("Connecting to {} using given token", evernoteService.getHost());
     if (this.notebooks.isEmpty() && this.stacks.isEmpty()) {
       System.out.println("Missing Evernote stacks and/or notebooks.");
       new CommandLine(this).usage(System.out);
@@ -96,7 +96,7 @@ public class EvernoteSync implements Callable<Integer> {
 
     final ClientFactory clientFactory = new ClientFactory(new EvernoteAuth(evernoteService, token));
 
-    final NoteStoreClient noteClient = clientFactory.createNoteStoreClient();
+    NoteStoreClient noteClient = createNoteStoreClient(clientFactory);
 
     var evernoteSyncFileFactory = new EvernoteSyncFileFactory(noteClient).loadAllNotebooks();
 
@@ -118,6 +118,16 @@ public class EvernoteSync implements Callable<Integer> {
       .forEach(Operation::execute);
 
     return 0;
+  }
+
+  private NoteStoreClient createNoteStoreClient(ClientFactory clientFactory) {
+    try {
+      return clientFactory.createNoteStoreClient();
+    } catch(Exception e) {
+      logger.error("Could not connect to evernote with probably invalid token: '{}'.", token, e);
+      System.exit(1);
+      return null;
+    }
   }
 
   private OperationFactory createOperationFactory() {
