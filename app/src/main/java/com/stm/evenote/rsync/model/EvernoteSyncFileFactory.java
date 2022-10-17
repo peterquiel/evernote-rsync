@@ -162,7 +162,7 @@ public class EvernoteSyncFileFactory {
         )
         .getData().getBody();
     } catch (EDAMUserException | EDAMSystemException | EDAMNotFoundException | TException e) {
-      throw new RuntimeException();
+      throw new RuntimeException(e);
     }
   }
 

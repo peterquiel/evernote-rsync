@@ -43,9 +43,7 @@ public class EvernoteSync implements Callable<Integer> {
 
   @CommandLine.Option(names = {"-t", "--token"},
     description = "Evernote access token; read readme in order to know how to extract the token from web client login" +
-      " " +
-      "process",
-    interactive = true, required = true)
+      " process", interactive = true, required = true)
   String token;
 
   @CommandLine.Option(names = {"-es", "--evernote-service"},
@@ -64,13 +62,15 @@ public class EvernoteSync implements Callable<Integer> {
     description = "Dry Run: Log file operations instead of applying them.")
   boolean dryRun = false;
 
+  @CommandLine.Option(names = {"--verbose"}, description = "detailed log output")
+  boolean verbose = false;
+
+  @SuppressWarnings("unused")
   @CommandLine.Option(names = {"-v", "--version"}, versionHelp = true,
     description = "print version information and exit")
   boolean versionRequested = false;
 
-  @CommandLine.Option(names = {"--verbose"}, description = "detailed log output")
-  boolean verbose = false;
-
+  @SuppressWarnings("unused")
   @CommandLine.Option(names = {"-h", "--help"}, usageHelp = true, description = "display this help message")
   boolean usageHelpRequested = false;
 
