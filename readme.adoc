@@ -26,14 +26,15 @@ You have to install Java (JRE oder JDK >= 17) to run this programm.
 Currently, there is no standalone version of this application available.
 This might change in the future.
 
-Run the following command to see all available options:
+Download the latest release from https://github.com/peterquiel/evernote-rsync/releases and
+run the following command to see all available options:
 
 [source, bash]
 ----
 java -jar evernote-rsync-VERSION.jar --help
 ----
 
-Result is:
+Output:
 [source, bash]
 ----
 Usage: Evernote Rsync [-hv] [--delete] [-dr] -t [--verbose]
