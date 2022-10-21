@@ -9,4 +9,3 @@
 
 rootProject.name = 'EvernoteRsync'
 include('app')
-kotlin.code.style=official
