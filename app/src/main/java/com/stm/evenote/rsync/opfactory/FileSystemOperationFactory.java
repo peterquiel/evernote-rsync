@@ -1,21 +1,16 @@
 package com.stm.evenote.rsync.opfactory;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.FileTime;
-import java.time.LocalDateTime;
-import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.stm.evenote.rsync.model.OperationFactory;
 import com.stm.evenote.rsync.model.SyncFile;
 import com.stm.evenote.rsync.model.SyncPath;
-import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +54,7 @@ public class FileSystemOperationFactory extends AbstractOperationFactory impleme
     logger.info("Creating/updating file '{}' with new data", absoluteSyncPath);
     var path = Paths.get(absoluteSyncPath.toString());
     Files.createDirectories(path.getParent());
-    Files.write(path, fileWithNewContent.getDataSupplier().get(), StandardOpenOption.CREATE);
+    Files.write(path, fileWithNewContent.getData(), StandardOpenOption.CREATE);
     Files.setLastModifiedTime(path, FileTime.from(fileWithNewContent.getTimestamp(), TimeUnit.SECONDS));
   }
 }

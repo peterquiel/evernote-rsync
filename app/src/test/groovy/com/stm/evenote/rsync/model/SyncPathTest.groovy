@@ -9,7 +9,6 @@ class SyncPathTest extends Specification {
   @TempDir
   FileSystemFixture fsFixture
 
-
   void "test append path from relative dir" () {
 
     when:
