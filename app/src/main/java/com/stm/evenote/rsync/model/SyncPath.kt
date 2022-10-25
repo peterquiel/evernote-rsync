@@ -1,95 +1,92 @@
-package com.stm.evenote.rsync.model;
+package com.stm.evenote.rsync.model
 
-import java.io.File;
-import java.util.Objects;
+import java.io.File
 
-public class SyncPath {
-
-  public static final SyncPath EMPTY = new SyncPath(null, null);
-  private static final String pathSeparator = System.getProperty("file.separator");
-  private final String segmentName;
-  private final SyncPath parentPath;
-
-  private static String removeEndingSlash(String segmentName) {
-    if (segmentName != null && segmentName.endsWith("/") || segmentName.endsWith(pathSeparator)) {
-      return segmentName.substring(0, segmentName.length()-1);
-    }
-    return segmentName;
-  }
-
-  private static String removeStartingSlash(String segmentName) {
-    if (segmentName != null && segmentName.startsWith("/") || segmentName.startsWith(pathSeparator)) {
-      return segmentName.substring(1);
-    }
-    return segmentName;
-  }
-
-  SyncPath(SyncPath parentPath, String segmentName) {
-
-    this.segmentName = segmentName;
-    this.parentPath = parentPath;
-
-  }
-
-  public SyncPath prepend(String parentPath) {
-    if (parentPath == null || parentPath.trim().length() < 1) {
-      return this;
-    }
-    return new SyncPath(null, removeEndingSlash(parentPath)).append(this.toString());
-  }
-
-  public SyncPath append(String childPath) {
-    if (childPath == null || childPath.trim().length() < 1) {
-      return this;
-    }
-    return new SyncPath(this, removeStartingSlash(removeEndingSlash(childPath)));
-  }
-
-  @Override
-  public int hashCode() {
-    int result = segmentName != null ? segmentName.hashCode() : 0;
-    result = 31 * result + (parentPath != null ? parentPath.hashCode() : 0);
-    return result;
-  }
-
-  public File toFile() {
-    return new File(this.toString());
-  }
-
-  public boolean isFile() {
-    var file = toFile();
-    return file.exists() && file.isFile();
-  }
-
-  public boolean isEmptyDir() {
-    var file = toFile();
-    return file.exists() && file.isDirectory() && (file.list() == null || file.list().length == 0 );
-  }
-
-  public boolean matches(String pattern) {
-    return this.toString().matches(pattern);
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (o == null || getClass() != o.getClass()) {
-      return false;
-    }
-    return Objects.equals(this.toString(), o.toString());
-  }
-
-  public String toString() {
-    if (parentPath == null) {
-      return segmentName == null ? "" : segmentName;
+class SyncPath internal constructor(private val parentPath: SyncPath?, private val segmentName: String?) {
+    fun prepend(parentPath: String?): SyncPath {
+        return if (parentPath == null || parentPath.trim { it <= ' ' }.isEmpty()) {
+            this
+        } else {
+            SyncPath(null, removeEndingSlash(parentPath)).append(this.toString())
+        }
     }
 
-    String path = parentPath.toString();
-    if (segmentName != null && segmentName.trim().length() > 1) {
-      if (path != null && path.trim().length() > 0) {
-        path = path + pathSeparator;
-      }
-      path = path  + segmentName;
+    fun append(childPath: String?): SyncPath {
+        return if (childPath == null || childPath.trim { it <= ' ' }.isEmpty()) {
+            this
+        } else SyncPath(
+            this,
+            removeStartingSlash(removeEndingSlash(childPath))
+        )
     }
-    return path;
-  }
+
+    override fun hashCode(): Int {
+        var result = segmentName?.hashCode() ?: 0
+        result = 31 * result + (parentPath?.hashCode() ?: 0)
+        return result
+    }
+
+    fun toFile(): File {
+        return File(this.toString())
+    }
+
+    val isFile: Boolean
+        get() {
+            val file = toFile()
+            return file.exists() && file.isFile
+        }
+
+    val isEmptyDir: Boolean
+        get() {
+            val file = toFile()
+            return file.exists() && file.isDirectory && (file.list() == null || file.list()?.isEmpty() ?: true)
+        }
+
+    fun matches(pattern: String?): Boolean {
+        if (pattern == null) {
+            return false
+        }
+        return this.toString().matches(Regex(pattern))
+    }
+
+    override fun equals(o: Any?): Boolean {
+        return if (o == null || javaClass != o.javaClass) {
+            false
+        } else {
+            this.toString() == o.toString()
+        }
+    }
+
+    override fun toString(): String {
+        if (parentPath == null) {
+            return segmentName ?: ""
+        }
+        var path = parentPath.toString()
+        if (segmentName != null && segmentName.trim { it <= ' ' }.length > 1) {
+            if (path.trim { it <= ' ' }.isNotEmpty()) {
+                path += pathSeparator
+            }
+            path += segmentName
+        }
+        return path
+    }
+
+    companion object {
+        @JvmField
+        val EMPTY = SyncPath(null, null)
+
+        private val pathSeparator = System.getProperty("file.separator")
+
+        private fun removeEndingSlash(segmentName: String?): String? {
+            return if (segmentName != null && segmentName.endsWith("/") || segmentName!!.endsWith(pathSeparator)) {
+                segmentName.substring(0, segmentName.length - 1)
+            } else segmentName
+        }
+
+        private fun removeStartingSlash(segmentName: String?): String? {
+            return if (segmentName != null && segmentName.startsWith("/") || segmentName!!.startsWith(pathSeparator)) {
+                segmentName.substring(1)
+            } else segmentName
+        }
+    }
 }

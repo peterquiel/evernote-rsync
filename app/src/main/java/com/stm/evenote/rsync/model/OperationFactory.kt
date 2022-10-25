@@ -1,12 +1,8 @@
-package com.stm.evenote.rsync.model;
+package com.stm.evenote.rsync.model
 
-public interface OperationFactory {
-
-    Operation noOp(SyncFile file);
-
-    Operation updateFile(SyncFile fileToUpdate, SyncFile fileWithNewContent);
-
-    Operation delete(SyncFile fileToDelete);
-
-    Operation newFile(SyncFile targetFile);
+interface OperationFactory {
+    fun noOp(file: SyncFile?): Operation?
+    fun updateFile(fileToUpdate: SyncFile?, fileWithNewContent: SyncFile?): Operation?
+    fun delete(fileToDelete: SyncFile?): Operation?
+    fun newFile(targetFile: SyncFile?): Operation?
 }
