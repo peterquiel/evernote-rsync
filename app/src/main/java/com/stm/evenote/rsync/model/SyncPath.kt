@@ -49,11 +49,11 @@ class SyncPath internal constructor(private val parentPath: SyncPath?, private v
         return this.toString().matches(Regex(pattern))
     }
 
-    override fun equals(o: Any?): Boolean {
-        return if (o == null || javaClass != o.javaClass) {
+    override fun equals(other: Any?): Boolean {
+        return if (other == null || javaClass != other.javaClass) {
             false
         } else {
-            this.toString() == o.toString()
+            this.toString() == other.toString()
         }
     }
 

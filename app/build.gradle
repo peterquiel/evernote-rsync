@@ -15,6 +15,16 @@ plugins {
 
   id "org.jetbrains.kotlin.jvm" version "1.7.20"
 }
+compileKotlin {
+  kotlinOptions {
+    jvmTarget = "17"
+  }
+}
+compileTestKotlin {
+  kotlinOptions {
+    jvmTarget = "17"
+  }
+}
 
 repositories {
   // Use Maven Central for resolving dependencies.
