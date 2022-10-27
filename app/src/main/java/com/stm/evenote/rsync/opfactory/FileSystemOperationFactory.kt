@@ -1,60 +1,62 @@
-package com.stm.evenote.rsync.opfactory;
+package com.stm.evenote.rsync.opfactory
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.FileTime;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
+import com.stm.evenote.rsync.model.OperationFactory
+import com.stm.evenote.rsync.model.SyncFile
+import com.stm.evenote.rsync.model.SyncPath
+import org.slf4j.LoggerFactory
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.nio.file.StandardOpenOption
+import java.nio.file.attribute.FileTime
+import java.util.concurrent.TimeUnit
 
-import com.stm.evenote.rsync.model.OperationFactory;
-import com.stm.evenote.rsync.model.SyncFile;
-import com.stm.evenote.rsync.model.SyncPath;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+class FileSystemOperationFactory(
+    workingDirectory: String,
+    delete: Boolean,
+    excludeDeleteRegExps: List<String>
+) :
 
-public class FileSystemOperationFactory extends AbstractOperationFactory implements OperationFactory {
+    AbstractOperationFactory(
+        workingDirectory, delete, excludeDeleteRegExps
+    ), OperationFactory {
 
-  private static final Logger logger = LoggerFactory.getLogger(FileSystemOperationFactory.class);
+    private val logger = LoggerFactory.getLogger(FileSystemOperationFactory::class.java)
 
-  public FileSystemOperationFactory(String workingDirectory, Boolean delete, List<String> excludeDeleteRegExps) {
-    super(workingDirectory, delete, excludeDeleteRegExps);
-  }
-
-  @Override
-  protected void execDeleteDir(SyncPath absoluteFile) {
-    logger.info("Deleting empty directory '{}'", absoluteFile);
-    var path = Paths.get(absoluteFile.toString());
-    try {
-      Files.delete(path);
-    } catch (IOException e) {
-      logger.error("Could not delete directory '{}'", absoluteFile, e);
+    override fun execDeleteDir(absoluteFile: SyncPath) {
+        logger.info("Deleting empty directory '${absoluteFile}'")
+        val path = Paths.get(absoluteFile.toString())
+        try {
+            Files.delete(path)
+        } catch (e: IOException) {
+            logger.error("Could not delete directory '${absoluteFile}'", e)
+        }
     }
-  }
 
-  @Override
-  protected void execDeleteFile(SyncPath absoluteFile) {
-    logger.info("Deleting file '{}'", absoluteFile);
-    var path = Paths.get(absoluteFile.toString());
-    try {
-      Files.delete(path);
-    } catch (IOException e) {
-      logger.error("Could not delete file '{}'", absoluteFile, e);
+    override fun execDeleteFile(absoluteFile: SyncPath) {
+        logger.info("Deleting file '{}'", absoluteFile)
+        val path = Paths.get(absoluteFile.toString())
+        try {
+            Files.delete(path)
+        } catch (e: IOException) {
+            logger.error("Could not delete file '${absoluteFile}'", e)
+        }
     }
-  }
 
-  @Override
-  protected void execNewFile(SyncFile newFile, SyncPath absoluteSyncPath) throws Exception {
-    execUpdateFile(newFile, absoluteSyncPath);
-  }
+    override fun execNewFile(newFile: SyncFile, absoluteSyncPath: SyncPath) {
+        execUpdateFile(newFile, absoluteSyncPath)
+    }
 
-  @Override
-  protected void execUpdateFile(SyncFile fileWithNewContent, SyncPath absoluteSyncPath) throws IOException {
-    logger.info("Creating/updating file '{}' with new data", absoluteSyncPath);
-    var path = Paths.get(absoluteSyncPath.toString());
-    Files.createDirectories(path.getParent());
-    Files.write(path, fileWithNewContent.getData(), StandardOpenOption.CREATE);
-    Files.setLastModifiedTime(path, FileTime.from(fileWithNewContent.getTimestamp(), TimeUnit.SECONDS));
-  }
+    override fun execUpdateFile(fileWithNewContent: SyncFile, absoluteSyncPath: SyncPath) {
+        logger.info("Creating/updating file '${absoluteSyncPath}' with new data")
+        val path = Paths.get(absoluteSyncPath.toString())
+        try {
+            Files.createDirectories(path.parent)
+            Files.write(path, fileWithNewContent.getData(), StandardOpenOption.CREATE)
+            Files.setLastModifiedTime(path, FileTime.from(fileWithNewContent.timestamp, TimeUnit.SECONDS))
+        } catch (ie: IOException) {
+            throw RuntimeException("Could not update file '${absoluteSyncPath}'", ie)
+        }
+    }
+
 }

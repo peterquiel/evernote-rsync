@@ -27,7 +27,7 @@ class SyncFiles {
         return syncFiles
     }
 
-    fun migrateTo(newState: SyncFiles, operationFactory: OperationFactory): List<Operation?> {
+    fun migrateTo(newState: SyncFiles, operationFactory: OperationFactory): List<Operation> {
         val createOperation = newState.syncFiles.stream()
             .map { f -> migrateTo(f, operationFactory) }
             .toList()
@@ -37,10 +37,10 @@ class SyncFiles {
             .toList()
         val operations = ArrayList(createOperation)
         operations.addAll(deleteOperations)
-        return operations
+        return operations.filterNotNull()
     }
 
-    private fun migrateTo(newState: SyncFile, operationFactory: OperationFactory): Operation? {
+    private fun migrateTo(newState: SyncFile, operationFactory: OperationFactory): Operation {
         val samePath = findByPath(newState)
         val sameHash = findAllByHash(newState)
 

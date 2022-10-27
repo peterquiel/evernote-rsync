@@ -18,7 +18,7 @@ class FileSystemOperationFactoryTest extends Specification {
       .withSyncPath(SyncPath.EMPTY.append("dir").append("file.txt"))
 
     and:
-    FileSystemOperationFactory operationFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), false, null)
+    FileSystemOperationFactory operationFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), false, [])
 
     when:
     operationFactory.newFile(syncFile).execute()
@@ -44,8 +44,8 @@ class FileSystemOperationFactoryTest extends Specification {
     def syncFile = new SyncFile()
       .withSyncPath(SyncPath.EMPTY.append("dir").append("file.txt"))
 
-    FileSystemOperationFactory deleteOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true, null)
-    FileSystemOperationFactory deleteDisabledOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), false, null)
+    FileSystemOperationFactory deleteOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true, [])
+    FileSystemOperationFactory deleteDisabledOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), false, [])
 
     when:
     file.text = "content"
@@ -71,7 +71,7 @@ class FileSystemOperationFactoryTest extends Specification {
     def syncFile = new SyncFile()
       .withSyncPath(SyncPath.EMPTY.append("dir").append("file.txt"))
 
-    FileSystemOperationFactory deleteOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true, null)
+    FileSystemOperationFactory deleteOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true, [])
 
     when:
     def file = fsFixture.file("dir/file.txt").toFile()
@@ -92,7 +92,7 @@ class FileSystemOperationFactoryTest extends Specification {
     def emptyDir = fsFixture.file("empty").toFile()
 
     and:
-    FileSystemOperationFactory deleteOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true, null)
+    FileSystemOperationFactory deleteOpFactory = new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true, [])
 
     when:
     fsFixture.file("not empty/file.txt").toFile().text = "content"
@@ -135,7 +135,7 @@ class FileSystemOperationFactoryTest extends Specification {
     dir.isDirectory()
 
     when:
-    new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true, null)
+    new FileSystemOperationFactory(fsFixture.getCurrentPath().toString(), true, [])
       .delete(syncFile).execute()
 
     then:

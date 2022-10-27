@@ -1,5 +1,5 @@
 package com.stm.evenote.rsync.model
 
-interface Operation {
+fun interface Operation {
     fun execute()
 }
