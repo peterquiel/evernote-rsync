@@ -1,4 +1,4 @@
-# Evernote Rsync
+# Evernote ENEX Exporter
 
 A simple java based programm to sync Evernote Attachments
 with your local file system.
@@ -35,12 +35,12 @@ You have to install Java (JRE oder JDK >= 17) to run this programm.
 Currently, there is no standalone version of this application available.
 This might change in the future.
 
-Download the latest release from https://github.com/peterquiel/evernote-rsync/releases and
+Download the latest release from https://github.com/peterquiel/evernote-exporter/releases and
 run the following command to see all available options:
 
 [source, bash]
 ----
-java -jar evernote-rsync-VERSION.jar --help
+java -jar evernote-exporter-VERSION.jar --help
 ----
 
 Output:
@@ -100,13 +100,13 @@ You can specify multiple notebooks or stacks with the following command:
 
 [source, bash]
 ----
-java -jar evernote-rsync-VERSION.jar -s "Stack One" -s "Stack Two" -n "Notebook One" -n "Notebook Two"
+java -jar evernote-exporter-VERSION.jar -s "Stack One" -s "Stack Two" -n "Notebook One" -n "Notebook Two"
 ----
 
 Analog the `--` parameter:
 [source, bash]
 ----
-java -jar evernote-rsync-VERSION.jar --stacks="Stack One" --stacks="Stack Two" --notebooks="Notebook One" --notebooks="Notebook Two"
+java -jar evernote-exporter-VERSION.jar --stacks="Stack One" --stacks="Stack Two" --notebooks="Notebook One" --notebooks="Notebook Two"
 ----
 
 
@@ -118,7 +118,7 @@ You can simple do that by copying your parameters into the file and using these 
 
 [source, bash]
 ----
-java -jar evernote-rsync-VERSION.jar @path/to/option/file_one @path/to/option/file_two
+java -jar evernote-exporter-VERSION.jar @path/to/option/file_one @path/to/option/file_two
 ----
 
 ## Acquire Evernote Access Token
