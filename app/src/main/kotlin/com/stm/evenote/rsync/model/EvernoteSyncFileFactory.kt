@@ -78,10 +78,11 @@ class EvernoteSyncFileFactory(private val noteStoreClient: NoteStoreClient) {
     private fun createForNote(note: Note, path: SyncPath): SyncFiles {
         if (note.resources != null && note.resources.isNotEmpty()) {
             val syncFiles = SyncFiles()
+            var title = replaceSlash(note.title)
             if (note.resources.size == 1) {
                 log.info("Note '${note.title}' with guid ${note.guid} has exactly one resources; Using note title as resources title.")
                 note.resources.filterNotNull().stream()
-                    .map { createForResource(it, path.append(note.title + getFileSuffix(it))) }
+                    .map { createForResource(it, path.append(title + getFileSuffix(it))) }
                     .peek { it.withTimestamp(note.updated) }
                     .forEach(syncFiles::add)
             } else {
@@ -89,7 +90,7 @@ class EvernoteSyncFileFactory(private val noteStoreClient: NoteStoreClient) {
                     "Note '${note.title}' with guid ${note.guid} has ${note.resources.size} resources; processing resources"
                 )
                 note.resources.filterNotNull().stream()
-                    .map { createForResource(it, path.append(note.title).append(it.attributes.fileName)) }
+                    .map { createForResource(it, path.append(title).append(it.attributes.fileName)) }
                     .peek { it.withTimestamp(note.updated) }
                     .forEach(syncFiles::add)
             }
@@ -130,8 +131,13 @@ class EvernoteSyncFileFactory(private val noteStoreClient: NoteStoreClient) {
     }
 
     private fun pathFor(notebook: Notebook): SyncPath {
-        return SyncPath.EMPTY.append(notebook.stack).append(notebook.name)
+        return SyncPath.EMPTY.append(replaceSlash(notebook.stack)).append(replaceSlash(notebook.name))
     }
+
+    private fun replaceSlash(path: String): String {
+        return path.replace("/", "_")
+    }
+
 
     private fun loadNotesIn(notebook: Notebook, offset: Int): List<Note> {
         val noteFilter = NoteFilter()
