@@ -45,9 +45,11 @@ class SyncFiles {
         val sameHash = findAllByHash(newState)
 
         return if (samePath.isPresent) {
+            var test = operationFactory.updateFile(samePath.get(), newState)
+            val noOp = operationFactory.noOp(newState)
             sameHash.findByPath(newState)
-                .map { operationFactory.noOp(newState) }
-                .orElse(operationFactory.updateFile(samePath.get(), newState))
+                .map { noOp }
+                .orElse(test)
         } else {
             operationFactory.newFile(newState)
         }

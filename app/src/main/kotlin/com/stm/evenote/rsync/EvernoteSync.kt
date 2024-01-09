@@ -22,7 +22,7 @@ import kotlin.system.exitProcess
     name = "Evernote Rsync",
     mixinStandardHelpOptions = true,
     showAtFileInUsageHelp = true,
-    version = ["Evernote Rsync Version: 0.6"]
+    version = ["Evernote Rsync Version: 0.7"]
 )
 class EvernoteSync : Callable<Int> {
     @CommandLine.Option(
@@ -130,7 +130,6 @@ class EvernoteSync : Callable<Int> {
         } catch (e: Exception) {
             logger.error("Could not connect to evernote with probably invalid token: '${token}'.", e)
             exitProcess(1)
-            null
         }
     }
 

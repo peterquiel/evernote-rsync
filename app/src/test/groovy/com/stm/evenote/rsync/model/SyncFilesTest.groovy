@@ -60,16 +60,18 @@ class SyncFilesTest extends Specification {
       noOp, updateFrom
     ])
 
+    operationFactory._(_) >> {  {} as Operation }
+
     when:
     def operations = currentState.migrateTo(newState, this.operationFactory)
 
     then:
     operations.size() == 6
-    1 * operationFactory.noOp(noOp)
-    1 * operationFactory.newFile(newFile)
-    1 * operationFactory.newFile(moveTo)
-    1 * operationFactory.updateFile(updateFrom, updateTo)
-    1 * operationFactory.delete(toDelete)
-    1 * operationFactory.delete(moveFrom)
+    1 * operationFactory.noOp(noOp) >> { {} as Operation }
+    1 * operationFactory.newFile(newFile) >> { {} as Operation }
+    1 * operationFactory.newFile(moveTo) >> { {} as Operation }
+    1 * operationFactory.updateFile(updateFrom, updateTo) >> { {} as Operation }
+    1 * operationFactory.delete(toDelete) >> { {} as Operation }
+    1 * operationFactory.delete(moveFrom) >> { {} as Operation }
   }
 }
